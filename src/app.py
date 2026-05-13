@@ -1,4 +1,4 @@
-from agents.planner import planner_agent
+from agents import planner_agent
 
 if __name__ == "__main__":
     query = input("Enter research topic: ")
