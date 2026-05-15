@@ -1,75 +1,139 @@
-# 🧠 Multi-Agent Research System (DeepResearch AI)
+# 🧠 DeepResearch AI
 
-A robust, multi-agent AI system designed to automate complex research workflows. Built with Python, this project leverages LangChain, Groq (gpt-oss-120b), and the Tavily Search API to autonomously break down high-level user queries, execute targeted web searches, and compile comprehensive, up-to-date insights.
+A multi-agent AI research system designed to automate complex research workflows using LLM-powered planning, real-time web retrieval, and AI-driven report generation.
 
----
-
-## 🏗️ Project Architecture (Current State - Phase 1)
-
-The system currently operates using a sequential multi-agent pipeline:
-
-1.  **User Input:** The system accepts a broad or complex research query from the user.
-2.  **Planner Agent (gpt-oss-120b via Groq):** 
-    *   Acts as the strategic brain.
-    *   Decomposes the high-level query into 3-4 highly specific, actionable sub-topics.
-    *   Outputs a structured JSON format (`pydantic` integratiovn).
-3.  **Research Agent (Tavily Search):**
-    *   Takes the output from the Planner.
-    *   Executes real-time, targeted web searches for each sub-topic.
-    *   Retrieves raw, relevant content, URLs, and titles directly from the web.
-
-*Note: The pipeline is currently processing raw search results, laying the groundwork for the upcoming Writer and Critic agents.*
+Built with Python, LangChain, LangGraph (upcoming), Groq LLMs, and Tavily Search API.
 
 ---
 
-## 🛠️ Technology Stack
+# 🚀 Features
 
-*   **Core Languages:** Python
-*   **LLM Orchestration:** LangChain
-*   **Models:** gpt-oss-120b (via Groq API)
-*   **Web Retrieval:** Tavily Search API
-*   **Data Validation:** Pydantic
-
----
-
-## 🚀 Current Output Example
-
-**User Query:** `Future of AI agents in software engineering`
-
-**1. Planner Agent Output (Decomposed Topics):**
-*   *AI-driven code generation and synthesis*
-*   *Automated debugging, testing, and quality assurance*
-*   *AI-assisted software architecture and design*
-*   *Human-AI collaborative workflows in development teams*
-
-**2. Research Agent Output (Live Retrieval):**
-*   *(Fetches relevant live articles, PDFs, and LinkedIn discussions for each topic, returning titles, URLs, and content snippets).*
+- Autonomous query decomposition using LLM agents
+- Real-time web research with Tavily Search
+- AI-generated structured research reports
+- Modular multi-agent architecture
+- Structured outputs with Pydantic
+- Scalable orchestration-ready pipeline
 
 ---
 
-## 🔜 Next Steps (Roadmap)
+# 🏗️ Current Architecture
 
-- [ ] **Writer Agent:** Implement an LLM-driven agent to synthesize raw search results into a clean, structured Markdown report.
-- [ ] **LangGraph Orchestration:** Transition from sequential Python functions to a state-based graph structure for dynamic agent routing.
-- [ ] **Shared State & Memory:** Integrate FAISS vector store to maintain context across multi-turn research tasks.
-- [ ] **Backend Integration:** Wrap the system in a scalable FastAPI RESTful backend.
+The system currently operates as a sequential multi-agent workflow:
 
-## 💻 How to Run (Local Development)
+```text
+User Query
+    ↓
+Planner Agent
+    ↓
+Research Agent
+    ↓
+Writer Agent
+    ↓
+Structured Markdown Report
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/ebrahimzaher/deepresearch-ai.git
-2. **Set up the environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-3. **Environment Variables:**
-    Create a .env file in the root directory and add your API keys:
-    ```bash
-    GROQ_API_KEY=your_groq_key
-    TAVILY_API_KEY=your_tavily_key
-4. **Execute the Pipeline:**
-    ```bash
-    python src/app.py
-Developed by [Ebrahim Zaher](https://github.com/ebrahimzaher)
+# 🤖 Agents
+
+## 1. Planner Agent
+- Uses `gpt-oss-120b` via Groq
+- Breaks complex user queries into focused research topics
+- Generates structured outputs for downstream agents
+
+## 2. Research Agent
+- Performs real-time web retrieval using Tavily Search API
+- Collects relevant articles, URLs, and research snippets
+- Organizes retrieved information by topic
+
+## 3. Writer Agent
+- Synthesizes retrieved information into structured markdown reports
+- Highlights trends, technologies, and key insights
+- Produces concise, readable research summaries
+
+# 🛠️ Tech Stack
+
+## Core
+- Python
+- LangChain
+- LangGraph (In Progress)
+
+## LLMs & AI
+- Groq API
+- gpt-oss-120b
+- Pydantic
+
+## Retrieval
+- Tavily Search API
+
+## Deployment (Planned)
+- FastAPI
+- Streamlit
+
+# 📌 Example Workflow
+
+## User Query
+```bash
+Future of AI agents in software engineering
+```
+
+## Planner Output
+- AI-driven code generation
+- Automated debugging and testing
+- AI-assisted software architecture
+- Human-AI collaboration models
+
+## Final Output
+### A fully structured AI-generated research report containing:
+
+- Introduction
+- Research sections
+- Technology insights
+- Key trends
+- Conclusion
+
+# 🔜 Roadmap
+- LangGraph state-based orchestration
+- Shared memory and reflection agents
+- Citation-aware report generation
+- FastAPI backend deployment
+- Streamlit interactive UI
+- Multi-turn conversational research
+
+# ⚙️ Local Setup
+
+## Clone Repository
+```bash
+git clone https://github.com/ebrahimzaher/deepresearch-ai.git
+```
+## Create Virtual Environment
+
+### Linux / macOS
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+### Windows
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Environment Variables
+
+Create a .env file:
+
+``` bash
+GROQ_API_KEY=your_groq_api_key
+TAVILY_API_KEY=your_tavily_api_key
+```
+
+### Run the Application
+```bash
+python src/app.py
+```
+# 👨‍💻 Developed By [Ebrahim Zaher](https://github.com/ebrahimzaher)
