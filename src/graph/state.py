@@ -5,3 +5,4 @@ class State(TypedDict):
     plan: dict
     research: dict
     report: str
+    critique: dict
