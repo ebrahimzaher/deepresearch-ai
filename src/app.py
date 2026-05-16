@@ -1,17 +1,9 @@
-from agents import planner_agent, researcher_agent, writer_agent
+from graph import app
 
 if __name__ == "__main__":
+    query = input("Enter your research topic: ")
+    result = app.invoke({"query": query})
 
-    query = input("Enter research topic: ")
-
-    print("\nRunning Planner Agent...")
-    plan = planner_agent(query)
-
-    print("\nRunning Research Agent...")
-    research = researcher_agent(plan)
-
-    print("\nRunning Writer Agent...")
-    report = writer_agent(research)
-
-    print("\n========================")
-    print(report)
+    print("\n--------------------------------------------")
+    print("\nGenerated Report:")
+    print(result["report"])
