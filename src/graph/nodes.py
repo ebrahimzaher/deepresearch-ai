@@ -1,4 +1,4 @@
-from agents import planner_agent, researcher_agent, writer_agent
+from agents import planner_agent, researcher_agent, writer_agent, critic_agent
 
 def planner_node(state):
     print("\nRunning Planner Node...")
@@ -20,3 +20,10 @@ def writer_node(state):
     report = writer_agent(state["research"])
 
     return {"report": report}
+
+def critic_node(state):
+    print("\nRunning Critic Node...")
+
+    critique = critic_agent(state["report"])
+
+    return {"critique": critique}

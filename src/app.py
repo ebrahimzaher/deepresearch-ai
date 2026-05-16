@@ -7,3 +7,7 @@ if __name__ == "__main__":
     print("\n--------------------------------------------")
     print("\nGenerated Report:")
     print(result["report"])
+
+    print("\n--------------------------------------------")
+    print("\nCritic Evaluation:")
+    print(result["critique"])

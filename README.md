@@ -1,6 +1,6 @@
 # 🧠 DeepResearch AI
 
-A stateful multi-agent AI research system designed to automate complex research workflows using LLM-powered planning, real-time web retrieval, and AI-generated report synthesis.
+A stateful multi-agent AI research system designed to automate complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, and reflection-based evaluation.
 
 Built with Python, LangChain, LangGraph, Groq LLMs, and Tavily Search API.
 
@@ -11,11 +11,12 @@ Built with Python, LangChain, LangGraph, Groq LLMs, and Tavily Search API.
 - Autonomous query decomposition using AI planning agents
 - Real-time web retrieval with Tavily Search API
 - AI-generated structured markdown research reports
+- Reflection / Critic agent for report evaluation
 - Stateful multi-agent orchestration with LangGraph
 - Shared workflow state across agents
 - Structured outputs using Pydantic
 - Modular and scalable agent architecture
-- Orchestration-ready pipeline for advanced agent workflows
+- Orchestration-ready pipeline for advanced AI workflows
 
 ---
 
@@ -41,6 +42,10 @@ The system operates using a LangGraph-powered state-based multi-agent workflow.
                 └────────┬────────┘
                          ↓
                 ┌─────────────────┐
+                │  Critic Agent   │
+                └────────┬────────┘
+                         ↓
+                ┌─────────────────┐
                 │ Final AI Report │
                 └─────────────────┘
 ```
@@ -55,13 +60,14 @@ Each agent operates as an independent node:
 - Planner Node
 - Research Node
 - Writer Node
+- Critic Node
 
 The workflow maintains shared state across all agents, enabling scalable orchestration and future support for:
 - Reflection loops
-- Critic agents
 - Agent memory
 - Conditional routing
 - Multi-turn research sessions
+- Human-in-the-loop workflows
 
 # 🤖 Agents
 
@@ -79,6 +85,11 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 - Synthesizes retrieved information into structured markdown reports
 - Highlights emerging technologies, trends, and key insights
 - Produces concise, readable, and professional AI-generated research summaries
+
+## 4. Critic Agent
+- Evaluates generated reports for clarity, completeness, and technical depth
+- Identifies weaknesses, missing topics, and structural improvements
+- Generates structured reflection feedback using JSON outputs
 
 ---
 
@@ -124,12 +135,12 @@ A fully structured AI-generated research report containing:
 - Technology insights
 - Key trends
 - Conclusion
+- Reflection / Critic evaluation
 
 ---
 
 # 🔜 Roadmap
 
-- Reflection / Critic Agent
 - Citation-aware report generation
 - Shared memory integration
 - Conditional agent routing
