@@ -6,7 +6,7 @@ Your task is to write a structured research report based on the provided researc
 Requirements:
 
 * Use clear section titles
-* Summarize the findings professionally
+* Summarize findings professionally
 * Highlight key technologies and trends
 * Keep the report concise but informative
 * Output clean markdown
@@ -17,4 +17,9 @@ The report should include:
 2. Introduction
 3. Key Research Areas
 4. Conclusion
-   """
+
+End the report with:
+
+Prepared by: Ebrahim Zaher
+Date: Current Date
+"""
