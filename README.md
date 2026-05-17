@@ -1,34 +1,39 @@
 # 🧠 DeepResearch AI
 
-A stateful multi-agent AI research system designed to automate complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, and API-based orchestration.
+A stateful multi-agent AI research system that automates complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, and API-based orchestration.
 
-Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, and Tavily Search API.
+Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavily Search API.
 
 ---
 
-# 🚀 Features
+## 🚀 Features
 
 - Autonomous query decomposition using AI planning agents
 - Real-time web retrieval with Tavily Search API
 - AI-generated structured markdown research reports
-- Reflection / Critic agent for report evaluation
+- PDF export with Unicode-safe rendering
+- Reflection / Critic agent for structured report evaluation
 - Stateful multi-agent orchestration with LangGraph
-- Shared workflow state across agents
+- Shared workflow state across all agents
 - Structured outputs using Pydantic
-- FastAPI backend for production-style API access
-- Interactive API documentation with Swagger UI
+- FastAPI backend with production-style REST API
+- Interactive API documentation via Swagger UI
+- Streamlit frontend with critic score dashboard
 - Modular and scalable agent architecture
-- Orchestration-ready pipeline for advanced AI workflows
 
 ---
 
-# 🏗️ Current Architecture
+## 🏗️ Architecture
 
-The system operates using a LangGraph-powered state-based multi-agent workflow exposed through a FastAPI backend.
+The system operates as a LangGraph-powered state-based multi-agent workflow exposed through a FastAPI backend and a Streamlit frontend.
 
 ```text
                 ┌─────────────────┐
                 │   User Query    │
+                └────────┬────────┘
+                         ↓
+                ┌─────────────────┐
+                │ Streamlit Front │
                 └────────┬────────┘
                          ↓
                 ┌─────────────────┐
@@ -58,66 +63,81 @@ The system operates using a LangGraph-powered state-based multi-agent workflow e
 
 ---
 
-# ⚡ LangGraph Workflow
+## ⚡ LangGraph Workflow
 
 The system uses LangGraph to orchestrate agent execution through a shared state-based workflow.
 
 Each agent operates as an independent node:
-- Planner Node
-- Research Node
-- Writer Node
-- Critic Node
 
-The workflow maintains shared state across all agents, enabling scalable orchestration and future support for:
-- Reflection loops
-- Agent memory
-- Conditional routing
-- Multi-turn research sessions
-- Human-in-the-loop workflows
+- **Planner Node** — decomposes the query into focused research subtopics
+- **Research Node** — retrieves real-time web content per subtopic
+- **Writer Node** — synthesizes findings into a structured markdown report
+- **Critic Node** — evaluates the report and returns structured JSON feedback
+
+The workflow maintains shared state across all agents, enabling scalable orchestration and future support for reflection loops, agent memory, conditional routing, and human-in-the-loop workflows.
 
 ---
 
-# 🤖 Agents
+## 🤖 Agents
 
-## 1. Planner Agent
+### 1. Planner Agent
 - Uses `gpt-oss-120b` via Groq for intelligent task planning
 - Breaks complex user queries into focused research topics
 - Generates structured outputs for downstream agents using Pydantic schemas
 
-## 2. Research Agent
+### 2. Research Agent
 - Performs real-time web retrieval using Tavily Search API
 - Collects relevant articles, URLs, and research snippets
 - Organizes retrieved information by topic for downstream synthesis
 
-## 3. Writer Agent
+### 3. Writer Agent
 - Synthesizes retrieved information into structured markdown reports
 - Highlights emerging technologies, trends, and key insights
 - Produces concise, readable, and professional AI-generated research summaries
 
-## 4. Critic Agent
+### 4. Critic Agent
 - Evaluates generated reports for clarity, completeness, and technical depth
-- Identifies weaknesses, missing topics, and structural improvements
-- Generates structured reflection feedback using JSON outputs
+- Returns a numeric score, strengths, weaknesses, missing topics, and a final verdict
+- Outputs structured JSON using Pydantic schemas
 
 ---
 
-# 🌐 FastAPI Backend
+## 🖥️ Streamlit Frontend
 
-The project includes a production-style FastAPI backend for exposing the multi-agent workflow through REST APIs.
+The interactive frontend (`frontend/app.py`) connects to the FastAPI backend and provides:
 
-## Available Endpoints
+- Research topic input area
+- Live report rendering in markdown
+- **PDF export** — downloadable, Unicode-safe report via ReportLab
+- Critic score metric display
+- Strengths / Weaknesses side-by-side columns
+- Missing topics and final verdict sections
 
-### Root Endpoint
+### Run the Frontend
+
+```bash
+streamlit run frontend/app.py
+```
+
+Then open: `http://localhost:8501`
+
+---
+
+## 🌐 FastAPI Backend
+
+### Available Endpoints
+
+#### Root
 ```http
 GET /
 ```
 
-### Research Endpoint
+#### Research
 ```http
 POST /research
 ```
 
-## Example Request
+#### Example Request
 
 ```json
 {
@@ -125,135 +145,128 @@ POST /research
 }
 ```
 
-## Example Response
+#### Example Response
 
 ```json
 {
-  "query": "...",
-  "report": "...",
+  "query": "Future of AI agents in software engineering",
+  "report": "# AI Enhanced Software Development...",
   "critique": {
     "score": 8,
-    "strengths": [],
-    "weaknesses": []
+    "strengths": ["Comprehensive coverage", "Well structured"],
+    "weaknesses": ["Lacks case studies"],
+    "missing_topics": ["Cost analysis", "Vendor lock-in risks"],
+    "final_verdict": "Strong report with minor gaps."
   }
 }
 ```
 
-Interactive API docs are automatically available via Swagger UI:
+Interactive API docs available at:
 
-```text
+```
 http://127.0.0.1:8000/docs
 ```
 
 ---
 
-# 🛠️ Tech Stack
+## 🛠️ Tech Stack
 
-## Core Frameworks
-- Python
-- LangChain
-- LangGraph
-- FastAPI
-
-## LLMs & AI
-- Groq API
-- `gpt-oss-120b`
-- Pydantic
-
-## Retrieval & Search
-- Tavily Search API
-
-## Planned Frontend
-- Streamlit
+| Layer | Technology |
+|---|---|
+| Language | Python 3.10+ |
+| Agent Orchestration | LangGraph, LangChain |
+| LLM Provider | Groq API (`gpt-oss-120b`) |
+| Web Retrieval | Tavily Search API |
+| Backend | FastAPI + Uvicorn |
+| Frontend | Streamlit |
+| PDF Generation | ReportLab |
+| Data Validation | Pydantic |
 
 ---
 
-# 📌 Example Workflow
+## ⚙️ Local Setup
 
-## User Query
-```bash
-Future of AI agents in software engineering
-```
+### 1. Clone the Repository
 
-## Planner Output
-- AI-driven code generation
-- Automated debugging and testing
-- AI-assisted software architecture
-- Human-AI collaboration models
-
-## Final Output
-
-A fully structured AI-generated research report containing:
-- Introduction
-- Research sections
-- Technology insights
-- Key trends
-- Conclusion
-- Reflection / Critic evaluation
-
----
-
-# 🔜 Roadmap
-
-- Citation-aware report generation
-- Shared memory integration
-- Conditional agent routing
-- Streamlit interactive UI
-- Multi-turn conversational research
-- Persistent research sessions
-- Cloud deployment (Render / Railway)
-
----
-
-# ⚙️ Local Setup
-
-## Clone Repository
 ```bash
 git clone https://github.com/ebrahimzaher/deepresearch-ai.git
+cd deepresearch-ai
 ```
 
-## Create Virtual Environment
+### 2. Create a Virtual Environment
 
-### Linux / macOS
+**Linux / macOS**
 ```bash
 python -m venv venv
 source venv/bin/activate
 ```
 
-### Windows
+**Windows**
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-## Install Dependencies
+### 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## Environment Variables
+### 4. Configure Environment Variables
 
 Create a `.env` file in the project root:
 
-```bash
+```env
 GROQ_API_KEY=your_groq_api_key
 TAVILY_API_KEY=your_tavily_api_key
 ```
 
-## Run FastAPI Backend
+### 5. Run the FastAPI Backend
 
 ```bash
 uvicorn api.main:app --reload
 ```
 
-## API Documentation
+### 6. Run the Streamlit Frontend
 
-```text
-http://127.0.0.1:8000/docs
+```bash
+streamlit run frontend/app.py
 ```
 
 ---
 
-# 👨‍💻 Developed By
+## 📌 Example Workflow
+
+**Input query:**
+```
+Future of AI agents in software engineering
+```
+
+**Planner output (subtopics):**
+- AI-driven code generation & synthesis
+- Automated debugging and testing
+- AI-assisted software architecture
+- Human-AI collaboration models
+- Ethical, security & bias considerations
+
+**Final output:**
+
+A fully structured markdown research report containing an introduction, per-topic research sections, key technology insights, a conclusion — plus a structured critic evaluation with score, strengths, weaknesses, and verdict. Exportable as a PDF.
+
+---
+
+## 🔜 Roadmap
+
+- [ ] Citation-aware report generation
+- [ ] Shared agent memory integration
+- [ ] Conditional agent routing & reflection loops
+- [ ] Multi-turn conversational research sessions
+- [ ] Persistent research session storage
+- [ ] Cloud deployment (Render / Railway)
+
+---
+
+## 👨‍💻 Developed By
 
 [Ebrahim Zaher](https://github.com/ebrahimzaher)
