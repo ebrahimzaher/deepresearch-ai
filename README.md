@@ -1,8 +1,8 @@
 # 🧠 DeepResearch AI
 
-A stateful multi-agent AI research system designed to automate complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, and reflection-based evaluation.
+A stateful multi-agent AI research system designed to automate complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, and API-based orchestration.
 
-Built with Python, LangChain, LangGraph, Groq LLMs, and Tavily Search API.
+Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, and Tavily Search API.
 
 ---
 
@@ -15,6 +15,8 @@ Built with Python, LangChain, LangGraph, Groq LLMs, and Tavily Search API.
 - Stateful multi-agent orchestration with LangGraph
 - Shared workflow state across agents
 - Structured outputs using Pydantic
+- FastAPI backend for production-style API access
+- Interactive API documentation with Swagger UI
 - Modular and scalable agent architecture
 - Orchestration-ready pipeline for advanced AI workflows
 
@@ -22,11 +24,15 @@ Built with Python, LangChain, LangGraph, Groq LLMs, and Tavily Search API.
 
 # 🏗️ Current Architecture
 
-The system operates using a LangGraph-powered state-based multi-agent workflow.
+The system operates using a LangGraph-powered state-based multi-agent workflow exposed through a FastAPI backend.
 
 ```text
                 ┌─────────────────┐
                 │   User Query    │
+                └────────┬────────┘
+                         ↓
+                ┌─────────────────┐
+                │  FastAPI Layer  │
                 └────────┬────────┘
                          ↓
                 ┌─────────────────┐
@@ -69,6 +75,8 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 - Multi-turn research sessions
 - Human-in-the-loop workflows
 
+---
+
 # 🤖 Agents
 
 ## 1. Planner Agent
@@ -93,12 +101,59 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 
 ---
 
+# 🌐 FastAPI Backend
+
+The project includes a production-style FastAPI backend for exposing the multi-agent workflow through REST APIs.
+
+## Available Endpoints
+
+### Root Endpoint
+```http
+GET /
+```
+
+### Research Endpoint
+```http
+POST /research
+```
+
+## Example Request
+
+```json
+{
+  "query": "Future of AI agents in software engineering"
+}
+```
+
+## Example Response
+
+```json
+{
+  "query": "...",
+  "report": "...",
+  "critique": {
+    "score": 8,
+    "strengths": [],
+    "weaknesses": []
+  }
+}
+```
+
+Interactive API docs are automatically available via Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
 # 🛠️ Tech Stack
 
 ## Core Frameworks
 - Python
 - LangChain
 - LangGraph
+- FastAPI
 
 ## LLMs & AI
 - Groq API
@@ -108,8 +163,7 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 ## Retrieval & Search
 - Tavily Search API
 
-## Planned Deployment
-- FastAPI
+## Planned Frontend
 - Streamlit
 
 ---
@@ -144,10 +198,10 @@ A fully structured AI-generated research report containing:
 - Citation-aware report generation
 - Shared memory integration
 - Conditional agent routing
-- FastAPI backend deployment
 - Streamlit interactive UI
 - Multi-turn conversational research
 - Persistent research sessions
+- Cloud deployment (Render / Railway)
 
 ---
 
@@ -186,9 +240,16 @@ GROQ_API_KEY=your_groq_api_key
 TAVILY_API_KEY=your_tavily_api_key
 ```
 
-## Run the Application
+## Run FastAPI Backend
+
 ```bash
-python src/app.py
+uvicorn api.main:app --reload
+```
+
+## API Documentation
+
+```text
+http://127.0.0.1:8000/docs
 ```
 
 ---
