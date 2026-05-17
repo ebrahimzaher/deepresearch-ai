@@ -1,6 +1,6 @@
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from prompts.critic_prompt import CRITIC_PROMPT
+from src.prompts.critic_prompt import CRITIC_PROMPT
 from dotenv import load_dotenv
 import json
 

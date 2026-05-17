@@ -1,4 +1,4 @@
-from agents import planner_agent, researcher_agent, writer_agent, critic_agent
+from src.agents import planner_agent, researcher_agent, writer_agent, critic_agent
 
 def planner_node(state):
     print("\nRunning Planner Node...")

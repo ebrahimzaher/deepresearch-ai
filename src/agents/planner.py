@@ -1,7 +1,7 @@
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
-from prompts.planner_prompt import PLANNER_PROMPT
+from src.prompts.planner_prompt import PLANNER_PROMPT
 import json
 
 load_dotenv()
