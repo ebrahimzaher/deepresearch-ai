@@ -1,4 +1,4 @@
-from services import search_web
+from src.services import search_web
 
 def researcher_agent(plan: dict):
 

@@ -3,3 +3,5 @@ langgraph==1.2.0
 langchain-groq==1.1.2
 tavily-python==0.7.24
 python-dotenv==1.2.2
+fastapi==0.136.1
+uvicorn==0.47.0
