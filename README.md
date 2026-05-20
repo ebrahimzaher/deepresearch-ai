@@ -113,14 +113,6 @@ The interactive frontend (`frontend/app.py`) connects to the FastAPI backend and
 - Strengths / Weaknesses side-by-side columns
 - Missing topics and final verdict sections
 
-### Run the Frontend
-
-```bash
-streamlit run frontend/app.py
-```
-
-Then open: `http://localhost:8501`
-
 ---
 
 ## 🌐 FastAPI Backend
@@ -164,27 +156,58 @@ POST /research
 Interactive API docs available at:
 
 ```
-http://127.0.0.1:8000/docs
+http://localhost:8080/docs
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## 🐳 Docker Setup (Recommended)
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.10+ |
-| Agent Orchestration | LangGraph, LangChain |
-| LLM Provider | Groq API (`gpt-oss-120b`) |
-| Web Retrieval | Tavily Search API |
-| Backend | FastAPI + Uvicorn |
-| Frontend | Streamlit |
-| PDF Generation | ReportLab |
-| Data Validation | Pydantic |
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/ebrahimzaher/deepresearch-ai.git
+cd deepresearch-ai
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+TAVILY_API_KEY=your_tavily_api_key
+```
+
+### 3. Build and Run
+
+```bash
+docker-compose up --build
+```
+
+### 4. Access the App
+
+| Service  | URL                          |
+|----------|------------------------------|
+| Frontend | http://localhost:8501        |
+| Backend  | http://localhost:8080        |
+| API Docs | http://localhost:8080/docs   |
+
+Generated reports are saved to the `reports/` folder in the project root.
+
+### `.dockerignore`
+
+```
+venv
+__pycache__
+.env
+.git
+reports
+```
 
 ---
 
-## ⚙️ Local Setup
+## ⚙️ Local Setup (Without Docker)
 
 ### 1. Clone the Repository
 
@@ -233,6 +256,22 @@ uvicorn api.main:app --reload
 ```bash
 streamlit run frontend/app.py
 ```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python 3.10+ |
+| Agent Orchestration | LangGraph, LangChain |
+| LLM Provider | Groq API (`gpt-oss-120b`) |
+| Web Retrieval | Tavily Search API |
+| Backend | FastAPI + Uvicorn |
+| Frontend | Streamlit |
+| PDF Generation | ReportLab |
+| Data Validation | Pydantic |
+| Containerization | Docker + Docker Compose |
 
 ---
 
