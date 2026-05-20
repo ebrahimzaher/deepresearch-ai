@@ -1,7 +1,8 @@
 import streamlit as st
 import requests
 import re
-
+import os
+from datetime import datetime
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -21,7 +22,11 @@ st.set_page_config(
 def clean_text(text):
     text = re.sub(r"<br\s*/?>", " ", text, flags=re.IGNORECASE)
 
-    text = re.sub(r"&(?!amp;|lt;|gt;|quot;|apos;)", "&amp;", text)
+    text = re.sub(
+        r"&(?!amp;|lt;|gt;|quot;|apos;)",
+        "&amp;",
+        text
+    )
 
     text = text.replace("**", "").replace("*", "")
 
@@ -37,7 +42,7 @@ def clean_text(text):
         "\u2019": "'",   # right single quotation mark
         "\u201c": '"',   # left double quotation mark
         "\u201d": '"',   # right double quotation mark
-        "\u2022": "-",   # bullet (ReportLab safe bullet added separately)
+        "\u2022": "-",   # bullet
         "\u2026": "...", # ellipsis
         "\u00a0": " ",   # non-breaking space
         "\u00b7": "-",   # middle dot
@@ -65,9 +70,10 @@ def generate_pdf(report_text):
 
     styles = getSampleStyleSheet()
 
-    title_style   = styles["Title"]
+    title_style = styles["Title"]
     heading_style = styles["Heading2"]
-    body_style    = styles["BodyText"]
+    body_style = styles["BodyText"]
+
     body_style.leading = 20
 
     elements = []
@@ -85,36 +91,65 @@ def generate_pdf(report_text):
 
         if line.startswith("# "):
             text = line.replace("# ", "", 1)
-            elements.append(Paragraph(text, title_style))
-            elements.append(Spacer(1, 20))
+
+            elements.append(
+                Paragraph(text, title_style)
+            )
+
+            elements.append(
+                Spacer(1, 20)
+            )
 
         elif line.startswith("## "):
             text = line.replace("## ", "", 1)
-            elements.append(Paragraph(text, heading_style))
-            elements.append(Spacer(1, 14))
+
+            elements.append(
+                Paragraph(text, heading_style)
+            )
+
+            elements.append(
+                Spacer(1, 14)
+            )
 
         elif line.startswith("* ") or line.startswith("- "):
             text = line[2:]
-            bullet = f"\u2022 {text}"
-            elements.append(Paragraph(bullet, body_style))
-            elements.append(Spacer(1, 8))
+
+            bullet = f"• {text}"
+
+            elements.append(
+                Paragraph(bullet, body_style)
+            )
+
+            elements.append(
+                Spacer(1, 8)
+            )
 
         elif line.startswith("---"):
-            elements.append(Spacer(1, 12))
+
+            elements.append(
+                Spacer(1, 12)
+            )
 
         else:
-            elements.append(Paragraph(line, body_style))
-            elements.append(Spacer(1, 10))
+
+            elements.append(
+                Paragraph(line, body_style)
+            )
+
+            elements.append(
+                Spacer(1, 10)
+            )
 
     doc.build(elements)
 
     buffer.seek(0)
     return buffer
 
-
-
 st.title("🧠 DeepResearch AI")
-st.markdown("### Stateful Multi-Agent Research System")
+
+st.markdown(
+    "### Stateful Multi-Agent Research System"
+)
 
 query = st.text_area(
     "Enter your research topic:",
@@ -134,6 +169,20 @@ if st.button("Generate Research Report"):
             json={"query": query}
         )
         data = response.json()
+
+        os.makedirs("reports", exist_ok=True)
+
+        timestamp = datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+
+        with open(
+            f"reports/report_{timestamp}.md",
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+            f.write(data["report"])
 
     st.success("Research Completed Successfully!")
     st.markdown("---")
