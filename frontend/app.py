@@ -165,7 +165,7 @@ if st.button("Generate Research Report"):
 
     with st.spinner("Running AI Research Workflow..."):
         response = requests.post(
-            "http://127.0.0.1:8000/research",
+            "http://backend:8000/research",
             json={"query": query}
         )
         data = response.json()
