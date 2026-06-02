@@ -13,6 +13,7 @@ Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavi
 - AI-generated structured markdown research reports
 - PDF export with Unicode-safe rendering
 - Reflection / Critic agent for structured report evaluation
+- Context summarization agent to maintain research history/continuity
 - Stateful multi-agent orchestration with LangGraph
 - Shared workflow state across all agents
 - Structured outputs using Pydantic
@@ -33,29 +34,33 @@ The system operates as a LangGraph-powered state-based multi-agent workflow expo
                 └────────┬────────┘
                          ↓
                 ┌─────────────────┐
-                │ Streamlit Front │
-                └────────┬────────┘
-                         ↓
-                ┌─────────────────┐
-                │  FastAPI Layer  │
-                └────────┬────────┘
-                         ↓
-                ┌─────────────────┐
-                │ Planner Agent   │
-                └────────┬────────┘
-                         ↓
-                ┌─────────────────┐
-                │ Research Agent  │
-                └────────┬────────┘
-                         ↓
-                ┌─────────────────┐
-                │  Writer Agent   │
-                └────────┬────────┘
-                         ↓
-                ┌─────────────────┐
-                │  Critic Agent   │
-                └────────┬────────┘
-                         ↓
+                │ Streamlit Front │◄──(Loads History)──┐
+                └────────┬────────┘                    │
+                         ↓                             │
+                ┌─────────────────┐                    │
+                │  FastAPI Layer  │                    │
+                └────────┬────────┘                    │
+                         ↓                             │
+                ┌─────────────────┐                    │
+                │ Summarizer Agent│                    │
+                └────────┬────────┘                    │
+                         ↓                             │
+                ┌─────────────────┐                    │
+                │ Planner Agent   │                    │
+                └────────┬────────┘                    │
+                         ↓                             │
+                ┌─────────────────┐                    │
+                │ Research Agent  │                    │
+                └────────┬────────┘                    │
+                         ↓                             │
+                ┌─────────────────┐                    │
+                │  Writer Agent   │                    │
+                └────────┬────────┘                    │
+                         ↓                             │
+                ┌─────────────────┐            ┌───────┴───────┐
+                │  Critic Agent   ├───────────►│ Local Memory  │
+                └────────┬────────┘            │(history.json) │
+                         ↓                     └───────────────┘
                 ┌─────────────────┐
                 │ Final AI Report │
                 └─────────────────┘
@@ -69,6 +74,7 @@ The system uses LangGraph to orchestrate agent execution through a shared state-
 
 Each agent operates as an independent node:
 
+- **Summarizer Node** — summarizes previous conversation/search history to maintain research context
 - **Planner Node** — decomposes the query into focused research subtopics
 - **Research Node** — retrieves real-time web content per subtopic
 - **Writer Node** — synthesizes findings into a structured markdown report
@@ -80,22 +86,27 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 
 ## 🤖 Agents
 
-### 1. Planner Agent
+### 1. Summarizer Agent
+- Uses `gpt-oss-120b` via Groq to analyze previous conversation history and the user's new query
+- Generates a concise summary of the core research context to maintain query continuity
+- Prevents redundant research across consecutive queries
+
+### 2. Planner Agent
 - Uses `gpt-oss-120b` via Groq for intelligent task planning
 - Breaks complex user queries into focused research topics
 - Generates structured outputs for downstream agents using Pydantic schemas
 
-### 2. Research Agent
+### 3. Research Agent
 - Performs real-time web retrieval using Tavily Search API
 - Collects relevant articles, URLs, and research snippets
 - Organizes retrieved information by topic for downstream synthesis
 
-### 3. Writer Agent
+### 4. Writer Agent
 - Synthesizes retrieved information into structured markdown reports
 - Highlights emerging technologies, trends, and key insights
 - Produces concise, readable, and professional AI-generated research summaries
 
-### 4. Critic Agent
+### 5. Critic Agent
 - Evaluates generated reports for clarity, completeness, and technical depth
 - Returns a numeric score, strengths, weaknesses, missing topics, and a final verdict
 - Outputs structured JSON using Pydantic schemas
@@ -127,6 +138,11 @@ GET /
 #### Research
 ```http
 POST /research
+```
+
+#### Memory (History)
+```http
+GET /memory
 ```
 
 #### Example Request
@@ -178,6 +194,8 @@ Create a `.env` file in the project root:
 GROQ_API_KEY=your_groq_api_key
 TAVILY_API_KEY=your_tavily_api_key
 ```
+
+*Note: The frontend uses the `BACKEND_URL` environment variable to connect to the backend API. In the Docker setup, this is automatically configured to `http://backend:8000` via `docker-compose.yml`.*
 
 ### 3. Build and Run
 
