@@ -3,3 +3,4 @@ __pycache__
 .env
 .git
 reports
+memory/history.json

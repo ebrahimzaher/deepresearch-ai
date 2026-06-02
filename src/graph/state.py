@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import List, Dict, Any, TypedDict
 
 class State(TypedDict):
     query: str
@@ -6,3 +6,5 @@ class State(TypedDict):
     research: dict
     report: str
     critique: dict
+    chat_history: List[Dict[str, Any]]
+    context_summary: str
