@@ -21,6 +21,11 @@ Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavi
 - Interactive API documentation via Swagger UI
 - Streamlit frontend with critic score dashboard
 - Modular and scalable agent architecture
+- Persistent local memory storage (`history.json`) across sessions
+- Research history sidebar with previous report loading
+- Automatic report saving to `reports/` folder with timestamps
+- Docker + Docker Compose containerized deployment
+- Configurable backend URL via environment variables
 
 ---
 
@@ -316,10 +321,8 @@ A fully structured markdown research report containing an introduction, per-topi
 ## 🔜 Roadmap
 
 - [ ] Citation-aware report generation
-- [ ] Shared agent memory integration
 - [ ] Conditional agent routing & reflection loops
 - [ ] Multi-turn conversational research sessions
-- [ ] Persistent research session storage
 - [ ] Cloud deployment (Render / Railway)
 
 ---
