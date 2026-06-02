@@ -1,6 +1,6 @@
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from src.prompts.writer_prompt import WRITER_PROMPT
+from src.prompts import WRITER_PROMPT
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,16 +11,24 @@ temperature=0.3
 )
 
 prompt = ChatPromptTemplate.from_messages([
-("system", WRITER_PROMPT),
-("human", "{research_data}")
+    ("system", WRITER_PROMPT),
+    ("human",
+"""
+Research Topic:
+{query}
+
+Research Data:
+{research_data}
+"""
+    )
 ])
 
 writer_chain = prompt | llm
 
-def writer_agent(research_data):
-
+def writer_agent(query, research_data):
     response = writer_chain.invoke({
+        "query": query,
         "research_data": str(research_data)
     })
-
+    
     return response.content
