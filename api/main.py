@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from src.services.memory import load_memory
 from src.graph import app as research_app
 from typing import Dict, Any
 
@@ -33,3 +34,7 @@ async def perform_research(request: ResearchRequest):
         "report": result["report"],
         "critique": result["critique"]
     }
+
+@app.get("/memory")
+async def get_memory():
+    return load_memory()
