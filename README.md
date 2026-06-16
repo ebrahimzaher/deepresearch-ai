@@ -74,9 +74,9 @@ The system operates as a LangGraph-powered state-based multi-agent workflow expo
            │    └──┬──────────┬──┘
            │   Yes │          │ No
            │       ↓          ↓
-           │  ┌──────────┐  ┌─────────────────┐
-           └──│ Revision  │  │ Return to User  │
-              │  Agent    │  │  (Approve?)     │
+           │  ┌──────────┐  ┌────────────────┐
+           └──│ Revision │  │ Return to User │
+              │  Agent   │  │  (Approve?)    │
               └──────────┘  └──┬──────────┬──┘
                             Yes│          │No + Feedback
                                ↓          ↓
