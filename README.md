@@ -1,4 +1,6 @@
-# 🧠 DeepResearch AI
+<h1 align="center">
+   🧠 DeepResearch AI
+</h1>
 
 A stateful multi-agent AI research system that automates complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, conditional agent routing, human-in-the-loop revision, and API-based orchestration.
 
@@ -69,8 +71,8 @@ The system operates as a LangGraph-powered state-based multi-agent workflow expo
            ┌───►│  Critic Agent   ├───────────►│ Local Memory  │
            │    └────────┬────────┘            │(history.json) │
            │             │                     └───────────────┘
-           │    ┌────────┴────────┐
-           │    │  Score < 7 ?    │
+           │    ┌────────┴───────┐
+           │    │  Score < 7 ?   │
            │    └──┬──────────┬──┘
            │   Yes │          │ No
            │       ↓          ↓
