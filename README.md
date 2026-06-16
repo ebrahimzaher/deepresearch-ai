@@ -11,15 +11,16 @@ Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavi
 - Autonomous query decomposition using AI planning agents
 - Real-time web retrieval with Tavily Search API
 - AI-generated structured markdown research reports
+- **Citation-aware generation** — inline `[1]`, `[2]` citations linked to source URLs
 - PDF export with Unicode-safe rendering
-- Reflection / Critic agent for structured report evaluation
+- Reflection / Critic agent for structured report evaluation (including citation quality)
 - Context summarization agent to maintain research history/continuity
 - Stateful multi-agent orchestration with LangGraph
-- Shared workflow state across all agents
+- Shared workflow state across all agents (including source index)
 - Structured outputs using Pydantic
 - FastAPI backend with production-style REST API
 - Interactive API documentation via Swagger UI
-- Streamlit frontend with critic score dashboard
+- Streamlit frontend with critic score dashboard and citation quality metrics
 - Modular and scalable agent architecture
 - Persistent local memory storage (`history.json`) across sessions
 - Research history sidebar with previous report loading
@@ -104,16 +105,21 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 ### 3. Research Agent
 - Performs real-time web retrieval using Tavily Search API
 - Collects relevant articles, URLs, and research snippets
+- Builds a **global source index** assigning each source a unique citation number `[1]`, `[2]`, etc.
+- Annotates each content chunk with its citation number for downstream traceability
 - Organizes retrieved information by topic for downstream synthesis
 
 ### 4. Writer Agent
 - Synthesizes retrieved information into structured markdown reports
+- Embeds **inline citations** (`[1]`, `[2]`, etc.) throughout the report to attribute claims to their sources
+- Appends a **Sources section** at the end listing all cited sources with titles and URLs
 - Highlights emerging technologies, trends, and key insights
 - Produces concise, readable, and professional AI-generated research summaries
 
 ### 5. Critic Agent
-- Evaluates generated reports for clarity, completeness, and technical depth
-- Returns a numeric score, strengths, weaknesses, missing topics, and a final verdict
+- Evaluates generated reports for clarity, completeness, technical depth, and **citation quality**
+- Assesses whether inline citations are present and whether a Sources section is included
+- Returns a numeric score, strengths, weaknesses, missing topics, citation quality assessment, and a final verdict
 - Outputs structured JSON using Pydantic schemas
 
 ---
@@ -123,10 +129,11 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 The interactive frontend (`frontend/app.py`) connects to the FastAPI backend and provides:
 
 - Research topic input area
-- Live report rendering in markdown
+- Live report rendering in markdown with clickable citation links
 - **PDF export** — downloadable, Unicode-safe report via ReportLab
 - Critic score metric display
 - Strengths / Weaknesses side-by-side columns
+- **Citation Quality** dashboard — inline citations and sources section status
 - Missing topics and final verdict sections
 
 ---
@@ -163,13 +170,22 @@ GET /memory
 ```json
 {
   "query": "Future of AI agents in software engineering",
-  "report": "# AI Enhanced Software Development...",
+  "report": "# AI Enhanced Software Development...\n\n## Sources\n[1] Source Title — https://example.com\n...",
   "critique": {
     "score": 8,
     "strengths": ["Comprehensive coverage", "Well structured"],
     "weaknesses": ["Lacks case studies"],
     "missing_topics": ["Cost analysis", "Vendor lock-in risks"],
+    "citation_quality": {
+      "has_inline_citations": true,
+      "has_sources_section": true,
+      "notes": "All major claims are properly cited."
+    },
     "final_verdict": "Strong report with minor gaps."
+  },
+  "source_index": {
+    "1": { "title": "AI Agents Overview", "url": "https://example.com/ai-agents" },
+    "2": { "title": "Future of Software Engineering", "url": "https://example.com/future-se" }
   }
 }
 ```
@@ -314,13 +330,12 @@ Future of AI agents in software engineering
 
 **Final output:**
 
-A fully structured markdown research report containing an introduction, per-topic research sections, key technology insights, a conclusion — plus a structured critic evaluation with score, strengths, weaknesses, and verdict. Exportable as a PDF.
+A fully structured markdown research report containing an introduction, per-topic research sections with inline citations `[1]`, `[2]`, key technology insights, a conclusion, and a **Sources** section listing all referenced URLs — plus a structured critic evaluation with score, strengths, weaknesses, citation quality assessment, and verdict. Exportable as a PDF.
 
 ---
 
 ## 🔜 Roadmap
 
-- [ ] Citation-aware report generation
 - [ ] Conditional agent routing & reflection loops
 - [ ] Multi-turn conversational research sessions
 - [ ] Cloud deployment (Render / Railway)
