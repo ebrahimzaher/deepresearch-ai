@@ -25,6 +25,8 @@ if "current_critique" not in st.session_state:
     st.session_state.current_critique = None
 if "current_query" not in st.session_state:
     st.session_state.current_query = ""
+if "current_source_index" not in st.session_state:
+    st.session_state.current_source_index = {}
 
 def clean_text(text):
     text = re.sub(r"<br\s*/?>", " ", text, flags=re.IGNORECASE)
@@ -140,6 +142,7 @@ if st.button("Generate Research Report"):
             st.session_state.current_report = data.get("report")
             st.session_state.current_critique = data.get("critique", {})
             st.session_state.current_query = query
+            st.session_state.current_source_index = data.get("source_index", {})
             st.success("Research Completed Successfully!")
             
         except requests.exceptions.RequestException as e:
@@ -186,6 +189,19 @@ if st.session_state.current_report:
         st.markdown("## ⚠️ Missing Topics")
         for item in critique.get("missing_topics", []):
             st.write(f"- {item}")
+
+        citation_quality = critique.get("citation_quality", {})
+        if citation_quality:
+            st.markdown("## 📎 Citation Quality")
+            cq_col1, cq_col2 = st.columns(2)
+            with cq_col1:
+                has_inline = citation_quality.get("has_inline_citations", False)
+                st.metric("Inline Citations", "✅ Yes" if has_inline else "❌ No")
+            with cq_col2:
+                has_sources = citation_quality.get("has_sources_section", False)
+                st.metric("Sources Section", "✅ Yes" if has_sources else "❌ No")
+            if citation_quality.get("notes"):
+                st.caption(citation_quality["notes"])
 
         st.markdown("## 📝 Final Verdict")
         st.info(critique.get("final_verdict", "No verdict available."))
