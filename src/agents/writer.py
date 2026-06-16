@@ -25,10 +25,19 @@ Research Data:
 
 writer_chain = prompt | llm
 
-def writer_agent(query, research_data):
+def writer_agent(query, research_data, source_index: dict = None):
+    # Format source index for the prompt
+    if source_index:
+        formatted_index = "\n".join(
+            [f"[{num}] {src['title']} — {src['url']}" for num, src in source_index.items()]
+        )
+    else:
+        formatted_index = "No sources available."
+
     response = writer_chain.invoke({
         "query": query,
-        "research_data": str(research_data)
+        "research_data": str(research_data),
+        "source_index": formatted_index
     })
     
     return response.content

@@ -12,14 +12,18 @@ def planner_node(state):
 def researcher_node(state):
     print("\nRunning Researcher Node...")
 
-    research = researcher_agent(state["plan"])
+    result = researcher_agent(state["plan"])
 
-    return {"research": research}
+    return {
+        "research": result["topics_data"],
+        "source_index": result["source_index"]
+    }
 
 def writer_node(state):
     print("\nRunning Writer Node...")
     
-    report = writer_agent(state["query"], state["research"])
+    source_index = state.get("source_index", {})
+    report = writer_agent(state["query"], state["research"], source_index)
 
     memory = load_memory()
     memory.append({"query": state["query"], "report": report})
@@ -33,15 +37,6 @@ def critic_node(state):
     critique = critic_agent(state["report"])
 
     return {"critique": critique}
-
-def summarizer_node(state):
-    print("\nRunning Summarizer Node...")
-    history = state.get("chat_history", [])
-    
-    summary = summarizer_agent(state["query"], history)
-    print(f"Context Summary: {summary}")
-    
-    return {"context_summary": summary}
 
 def summarizer_node(state):
     print("\nRunning Summarizer Node...")

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from src.services.memory import load_memory
 from src.graph import app as research_app
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 app = FastAPI(
     title="DeepResearch AI",
@@ -17,6 +17,7 @@ class ResearchResponse(BaseModel):
     query: str
     report: str
     critique: Dict[str, Any]
+    source_index: Optional[Dict[str, Any]] = None
 
 
 @app.get("/")
@@ -32,7 +33,8 @@ async def perform_research(request: ResearchRequest):
     return {
         "query": request.query,
         "report": result["report"],
-        "critique": result["critique"]
+        "critique": result["critique"],
+        "source_index": result.get("source_index", {})
     }
 
 @app.get("/memory")
