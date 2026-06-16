@@ -4,6 +4,7 @@ class State(TypedDict):
     query: str
     plan: dict
     research: dict
+    source_index: Dict[str, Any]
     report: str
     critique: dict
     chat_history: List[Dict[str, Any]]
