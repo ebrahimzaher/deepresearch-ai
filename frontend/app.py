@@ -27,6 +27,12 @@ if "current_query" not in st.session_state:
     st.session_state.current_query = ""
 if "current_source_index" not in st.session_state:
     st.session_state.current_source_index = {}
+if "current_research_data" not in st.session_state:
+    st.session_state.current_research_data = []
+if "revision_count" not in st.session_state:
+    st.session_state.revision_count = 0
+if "report_approved" not in st.session_state:
+    st.session_state.report_approved = False
 
 def clean_text(text):
     text = re.sub(r"<br\s*/?>", " ", text, flags=re.IGNORECASE)
@@ -101,6 +107,7 @@ with st.sidebar:
                             st.session_state.current_report = item.get('report')
                             st.session_state.current_critique = item.get('critique', {})
                             st.session_state.current_query = item.get('query', '')
+                            st.session_state.report_approved = True
                             st.rerun()
             else:
                 st.info("No research history yet.")
@@ -125,6 +132,10 @@ if st.button("Generate Research Report"):
         st.warning("Please enter a research topic.")
         st.stop()
 
+    # Reset state for new research
+    st.session_state.report_approved = False
+    st.session_state.revision_count = 0
+
     with st.spinner("Running AI Research Workflow..."):
         try:
             response = requests.post(
@@ -143,6 +154,9 @@ if st.button("Generate Research Report"):
             st.session_state.current_critique = data.get("critique", {})
             st.session_state.current_query = query
             st.session_state.current_source_index = data.get("source_index", {})
+            st.session_state.current_research_data = data.get("research_data", [])
+            st.session_state.revision_count = data.get("revision_count", 0)
+            st.session_state.report_approved = False
             st.success("Research Completed Successfully!")
             
         except requests.exceptions.RequestException as e:
@@ -151,6 +165,15 @@ if st.button("Generate Research Report"):
 st.markdown("---")
 
 if st.session_state.current_report:
+
+    # --- Revision Info Badge ---
+    rev_count = st.session_state.revision_count
+    if rev_count > 0:
+        st.info(f"🔄 This report has been revised **{rev_count}** time{'s' if rev_count > 1 else ''}.")
+
+    if st.session_state.report_approved:
+        st.success("✅ Report has been approved!")
+
     st.markdown("# 📄 Research Report")
     st.markdown(st.session_state.current_report)
 
@@ -203,5 +226,79 @@ if st.session_state.current_report:
             if citation_quality.get("notes"):
                 st.caption(citation_quality["notes"])
 
+        # --- Revision Suggestions ---
+        revision_suggestions = critique.get("revision_suggestions", [])
+        if revision_suggestions:
+            st.markdown("## 💡 Revision Suggestions")
+            for item in revision_suggestions:
+                st.write(f"- {item}")
+
         st.markdown("## 📝 Final Verdict")
         st.info(critique.get("final_verdict", "No verdict available."))
+
+    # ============================================
+    # Human-in-the-Loop: Approve / Reject
+    # ============================================
+    if not st.session_state.report_approved:
+        st.markdown("---")
+        st.markdown("# 🤝 Human-in-the-Loop")
+        st.markdown("**Report is ready for your review. Do you approve?**")
+
+        hitl_col1, hitl_col2 = st.columns(2)
+
+        with hitl_col1:
+            if st.button("✅ Approve Report", use_container_width=True, type="primary"):
+                st.session_state.report_approved = True
+                st.success("✅ Report approved and finalized!")
+                st.rerun()
+
+        with hitl_col2:
+            if st.button("❌ Request Revision", use_container_width=True):
+                st.session_state["show_revision_input"] = True
+
+        # --- Revision Feedback Input ---
+        if st.session_state.get("show_revision_input", False):
+            st.markdown("### 📝 What should be improved?")
+            user_feedback = st.text_area(
+                "Your feedback for the revision:",
+                height=120,
+                placeholder="e.g., Add more details about security risks, expand the conclusion...",
+                key="revision_feedback_input"
+            )
+
+            if st.button("🚀 Submit Revision", type="primary"):
+                if not user_feedback.strip():
+                    st.warning("Please provide feedback for the revision.")
+                else:
+                    with st.spinner("🔄 Revising report based on your feedback..."):
+                        try:
+                            response = requests.post(
+                                f"{BACKEND_URL}/revise",
+                                json={
+                                    "query": st.session_state.current_query,
+                                    "report": st.session_state.current_report,
+                                    "user_feedback": user_feedback,
+                                    "research_data": st.session_state.current_research_data,
+                                    "source_index": st.session_state.current_source_index,
+                                    "revision_count": st.session_state.revision_count
+                                }
+                            )
+                            response.raise_for_status()
+                            data = response.json()
+
+                            st.session_state.current_report = data["report"]
+                            st.session_state.current_critique = data["critique"]
+                            st.session_state.revision_count = data["revision_count"]
+                            st.session_state["show_revision_input"] = False
+
+                            # Save revised report
+                            os.makedirs("reports", exist_ok=True)
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            with open(f"reports/report_revised_{timestamp}.md", "w", encoding="utf-8") as f:
+                                f.write(data["report"])
+
+                            st.success(f"✅ Revision #{data['revision_count']} completed!")
+                            st.rerun()
+
+                        except requests.exceptions.RequestException as e:
+                            st.error(f"Revision API Error: {e}")

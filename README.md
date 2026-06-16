@@ -1,6 +1,6 @@
 # 🧠 DeepResearch AI
 
-A stateful multi-agent AI research system that automates complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, and API-based orchestration.
+A stateful multi-agent AI research system that automates complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, conditional agent routing, human-in-the-loop revision, and API-based orchestration.
 
 Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavily Search API.
 
@@ -12,15 +12,17 @@ Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavi
 - Real-time web retrieval with Tavily Search API
 - AI-generated structured markdown research reports
 - **Citation-aware generation** — inline `[1]`, `[2]` citations linked to source URLs
+- **Conditional agent routing & reflection loops** — automatic revision when critic score < 7 (max 2 auto-revisions)
+- **Human-in-the-Loop (HITL)** — user approves or rejects reports with custom feedback for revision
 - PDF export with Unicode-safe rendering
-- Reflection / Critic agent for structured report evaluation (including citation quality)
+- Reflection / Critic agent for structured report evaluation (including citation quality & revision suggestions)
 - Context summarization agent to maintain research history/continuity
 - Stateful multi-agent orchestration with LangGraph
-- Shared workflow state across all agents (including source index)
+- Shared workflow state across all agents (including source index & revision tracking)
 - Structured outputs using Pydantic
-- FastAPI backend with production-style REST API
+- FastAPI backend with production-style REST API (`/research` + `/revise`)
 - Interactive API documentation via Swagger UI
-- Streamlit frontend with critic score dashboard and citation quality metrics
+- Streamlit frontend with critic score dashboard, citation quality metrics, and HITL approval UI
 - Modular and scalable agent architecture
 - Persistent local memory storage (`history.json`) across sessions
 - Research history sidebar with previous report loading
@@ -64,19 +66,30 @@ The system operates as a LangGraph-powered state-based multi-agent workflow expo
                 └────────┬────────┘                    │
                          ↓                             │
                 ┌─────────────────┐            ┌───────┴───────┐
-                │  Critic Agent   ├───────────►│ Local Memory  │
-                └────────┬────────┘            │(history.json) │
-                         ↓                     └───────────────┘
-                ┌─────────────────┐
-                │ Final AI Report │
-                └─────────────────┘
+           ┌───►│  Critic Agent   ├───────────►│ Local Memory  │
+           │    └────────┬────────┘            │(history.json) │
+           │             │                     └───────────────┘
+           │    ┌────────┴────────┐
+           │    │  Score < 7 ?    │
+           │    └──┬──────────┬──┘
+           │   Yes │          │ No
+           │       ↓          ↓
+           │  ┌──────────┐  ┌────────────────┐
+           └──│ Revision │  │ Return to User │
+              │  Agent   │  │  (Approve?)    │
+              └──────────┘  └──┬──────────┬──┘
+                            Yes│          │No + Feedback
+                               ↓          ↓
+                          ┌────────┐  ┌──────────┐
+                          │  Done  │  │ /revise  │──► Revision ──► Critic
+                          └────────┘  └──────────┘
 ```
 
 ---
 
 ## ⚡ LangGraph Workflow
 
-The system uses LangGraph to orchestrate agent execution through a shared state-based workflow.
+The system uses LangGraph to orchestrate agent execution through a shared state-based workflow with **conditional routing**.
 
 Each agent operates as an independent node:
 
@@ -85,8 +98,19 @@ Each agent operates as an independent node:
 - **Research Node** — retrieves real-time web content per subtopic
 - **Writer Node** — synthesizes findings into a structured markdown report
 - **Critic Node** — evaluates the report and returns structured JSON feedback
+- **Revision Node** — improves the report based on critic feedback (triggered conditionally)
 
-The workflow maintains shared state across all agents, enabling scalable orchestration and future support for reflection loops, agent memory, conditional routing, and human-in-the-loop workflows.
+### Conditional Routing & Reflection Loop
+
+After the Critic evaluates the report:
+- If `score < 7` and `revision_count < 2` → the workflow automatically routes to the **Revision Node**, which improves the report and sends it back to the Critic for re-evaluation
+- If `score >= 7` or max revisions reached → the report is finalized and returned to the user
+
+### Human-in-the-Loop (HITL)
+
+After the automatic loop completes, the user can:
+- **✅ Approve** the report — finalizes it
+- **❌ Reject** with custom feedback (e.g., "Add more details about security risks") — triggers a revision via the `/revise` API endpoint, then re-evaluates with the Critic
 
 ---
 
@@ -119,8 +143,15 @@ The workflow maintains shared state across all agents, enabling scalable orchest
 ### 5. Critic Agent
 - Evaluates generated reports for clarity, completeness, technical depth, and **citation quality**
 - Assesses whether inline citations are present and whether a Sources section is included
-- Returns a numeric score, strengths, weaknesses, missing topics, citation quality assessment, and a final verdict
+- Returns a numeric score, strengths, weaknesses, missing topics, citation quality, **revision suggestions**, and a final verdict
+- A score below 7 triggers automatic revision (up to 2 times)
 - Outputs structured JSON using Pydantic schemas
+
+### 6. Revision Agent
+- Activated when the Critic scores a report below 7, or when the user requests a revision via HITL
+- Takes the original report + critic feedback (or user feedback) + research data
+- Produces an improved version while preserving structure and citations
+- Sends the revised report back to the Critic for re-evaluation
 
 ---
 
@@ -134,7 +165,10 @@ The interactive frontend (`frontend/app.py`) connects to the FastAPI backend and
 - Critic score metric display
 - Strengths / Weaknesses side-by-side columns
 - **Citation Quality** dashboard — inline citations and sources section status
+- **Revision Suggestions** from the Critic
 - Missing topics and final verdict sections
+- **Human-in-the-Loop UI** — Approve / Reject buttons with feedback text input
+- Revision counter badge showing how many revisions occurred
 
 ---
 
@@ -152,12 +186,17 @@ GET /
 POST /research
 ```
 
+#### Revise (Human-in-the-Loop)
+```http
+POST /revise
+```
+
 #### Memory (History)
 ```http
 GET /memory
 ```
 
-#### Example Request
+#### Example Research Request
 
 ```json
 {
@@ -165,7 +204,7 @@ GET /memory
 }
 ```
 
-#### Example Response
+#### Example Research Response
 
 ```json
 {
@@ -181,12 +220,44 @@ GET /memory
       "has_sources_section": true,
       "notes": "All major claims are properly cited."
     },
+    "revision_suggestions": ["Add real-world case studies", "Include cost analysis section"],
     "final_verdict": "Strong report with minor gaps."
   },
   "source_index": {
     "1": { "title": "AI Agents Overview", "url": "https://example.com/ai-agents" },
     "2": { "title": "Future of Software Engineering", "url": "https://example.com/future-se" }
-  }
+  },
+  "research_data": ["..."],
+  "revision_count": 0
+}
+```
+
+#### Example Revision Request
+
+```json
+{
+  "query": "Future of AI agents in software engineering",
+  "report": "# AI Enhanced Software Development...",
+  "user_feedback": "Add more details about security risks",
+  "research_data": ["..."],
+  "source_index": { "1": { "title": "...", "url": "..." } },
+  "revision_count": 0
+}
+```
+
+#### Example Revision Response
+
+```json
+{
+  "report": "# AI Enhanced Software Development (Revised)...",
+  "critique": {
+    "score": 9,
+    "strengths": ["Comprehensive coverage", "Security risks addressed"],
+    "weaknesses": [],
+    "revision_suggestions": [],
+    "final_verdict": "Excellent report after revision."
+  },
+  "revision_count": 1
 }
 ```
 
@@ -330,13 +401,12 @@ Future of AI agents in software engineering
 
 **Final output:**
 
-A fully structured markdown research report containing an introduction, per-topic research sections with inline citations `[1]`, `[2]`, key technology insights, a conclusion, and a **Sources** section listing all referenced URLs — plus a structured critic evaluation with score, strengths, weaknesses, citation quality assessment, and verdict. Exportable as a PDF.
+A fully structured markdown research report containing an introduction, per-topic research sections with inline citations `[1]`, `[2]`, key technology insights, a conclusion, and a **Sources** section listing all referenced URLs — plus a structured critic evaluation with score, strengths, weaknesses, citation quality assessment, revision suggestions, and verdict. If the critic scores the report below 7, it is automatically revised (up to 2 times). The user can then **approve** or **reject with feedback** for further human-guided revision. Exportable as a PDF.
 
 ---
 
 ## 🔜 Roadmap
 
-- [ ] Conditional agent routing & reflection loops
 - [ ] Multi-turn conversational research sessions
 - [ ] Cloud deployment (Render / Railway)
 
