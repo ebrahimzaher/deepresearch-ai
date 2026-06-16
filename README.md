@@ -69,8 +69,8 @@ The system operates as a LangGraph-powered state-based multi-agent workflow expo
            ┌───►│  Critic Agent   ├───────────►│ Local Memory  │
            │    └────────┬────────┘            │(history.json) │
            │             │                     └───────────────┘
-           │    ┌────────┴────────┐
-           │    │  Score < 7 ?    │
+           │    ┌────────┴───────┐
+           │    │  Score < 7 ?   │
            │    └──┬──────────┬──┘
            │   Yes │          │ No
            │       ↓          ↓
