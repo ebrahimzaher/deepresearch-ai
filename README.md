@@ -1,21 +1,3 @@
----
-title: DeepResearch AI
-emoji: 🧠
-colorFrom: indigo
-colorTo: purple
-sdk: docker
-app_port: 7860
-short_description: Stateful multi-agent AI research system with LangGraph
-tags:
-  - ai
-  - research
-  - langgraph
-  - langchain
-  - fastapi
-  - streamlit
-  - groq
-pinned: false
----
 
 <div align="center">
 
