@@ -293,16 +293,6 @@ deepresearch-ai/
 
 ---
 
-## Roadmap
-
-- [ ] Multi-turn conversational research sessions
-- [ ] Vector store integration for long-term memory
-- [ ] Cloud deployment (Render / Railway)
-- [ ] Support for additional LLM providers (OpenAI, Anthropic)
-- [ ] Export to Word / Notion
-
----
-
 ## Contributing
 
 Contributions are welcome! Please open an issue first to discuss what you'd like to change.
