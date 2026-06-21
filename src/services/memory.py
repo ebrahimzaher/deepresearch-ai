@@ -11,5 +11,6 @@ def load_memory():
         return json.load(f)
 
 def save_memory(data):
+    MEMORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(MEMORY_FILE,"w",encoding="utf-8") as f:
         json.dump(data,f,indent=4,ensure_ascii=False)
