@@ -17,422 +17,308 @@ tags:
 pinned: false
 ---
 
-<h1 align="center">
-   🧠 DeepResearch AI
-</h1>
+<div align="center">
 
-A stateful multi-agent AI research system that automates complex research workflows using LLM-powered planning, real-time web retrieval, AI-generated report synthesis, reflection-based evaluation, conditional agent routing, human-in-the-loop revision, and API-based orchestration.
+# 🧠 DeepResearch AI
 
-Built with Python, LangChain, LangGraph, Groq LLMs, FastAPI, Streamlit, and Tavily Search API.
+**A stateful multi-agent research system that automates complex research workflows using LLM-powered planning, real-time web retrieval, and reflection-based evaluation.**
 
----
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![LangGraph](https://img.shields.io/badge/LangGraph-1.2-FF6B6B?style=flat)](https://langchain-ai.github.io/langgraph/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.57-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com)
+[![HuggingFace](https://img.shields.io/badge/🤗%20HuggingFace-Spaces-FFD21E?style=flat)](https://huggingface.co/spaces/ebrahimzaher/deepresearch-ai-demo)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
-## 🚀 Features
+[**🚀 Live Demo**](https://huggingface.co/spaces/ebrahimzaher/deepresearch-ai-demo) · [**📖 API Docs**](https://huggingface.co/spaces/ebrahimzaher/deepresearch-ai-demo/api/docs) · [**🐛 Report Bug**](https://github.com/ebrahimzaher/deepresearch-ai/issues)
 
-- Autonomous query decomposition using AI planning agents
-- Real-time web retrieval with Tavily Search API
-- AI-generated structured markdown research reports
-- **Citation-aware generation** — inline `[1]`, `[2]` citations linked to source URLs
-- **Conditional agent routing & reflection loops** — automatic revision when critic score < 7 (max 2 auto-revisions)
-- **Human-in-the-Loop (HITL)** — user approves or rejects reports with custom feedback for revision
-- PDF export with Unicode-safe rendering
-- Reflection / Critic agent for structured report evaluation (including citation quality & revision suggestions)
-- Context summarization agent to maintain research history/continuity
-- Stateful multi-agent orchestration with LangGraph
-- Shared workflow state across all agents (including source index & revision tracking)
-- Structured outputs using Pydantic
-- FastAPI backend with production-style REST API (`/research` + `/revise`)
-- Interactive API documentation via Swagger UI
-- Streamlit frontend with critic score dashboard, citation quality metrics, and HITL approval UI
-- Modular and scalable agent architecture
-- Persistent local memory storage (`history.json`) across sessions
-- Research history sidebar with previous report loading
-- Automatic report saving to `reports/` folder with timestamps
-- Docker + Docker Compose containerized deployment
-- Configurable backend URL via environment variables
+</div>
 
 ---
 
-## 🏗️ Architecture
+## Overview
 
-The system operates as a LangGraph-powered state-based multi-agent workflow exposed through a FastAPI backend and a Streamlit frontend.
+DeepResearch AI is a production-ready multi-agent research pipeline built on **LangGraph**. Given a research topic, the system autonomously decomposes it into subtopics, retrieves live web content, synthesizes a structured report with inline citations, and evaluates it through a Critic agent — automatically triggering revisions when quality falls below a threshold.
 
-```text
-                ┌─────────────────┐
-                │   User Query    │
-                └────────┬────────┘
-                         ↓
-                ┌─────────────────┐
-                │ Streamlit Front │◄──(Loads History)──┐
-                └────────┬────────┘                    │
-                         ↓                             │
-                ┌─────────────────┐                    │
-                │  FastAPI Layer  │                    │
-                └────────┬────────┘                    │
-                         ↓                             │
-                ┌─────────────────┐                    │
-                │ Summarizer Agent│                    │
-                └────────┬────────┘                    │
-                         ↓                             │
-                ┌─────────────────┐                    │
-                │ Planner Agent   │                    │
-                └────────┬────────┘                    │
-                         ↓                             │
-                ┌─────────────────┐                    │
-                │ Research Agent  │                    │
-                └────────┬────────┘                    │
-                         ↓                             │
-                ┌─────────────────┐                    │
-                │  Writer Agent   │                    │
-                └────────┬────────┘                    │
-                         ↓                             │
-                ┌─────────────────┐            ┌───────┴───────┐
-           ┌───►│  Critic Agent   ├───────────►│ Local Memory  │
-           │    └────────┬────────┘            │(history.json) │
-           │             │                     └───────────────┘
-           │    ┌────────┴───────┐
-           │    │  Score < 7 ?   │
-           │    └──┬──────────┬──┘
-           │   Yes │          │ No
-           │       ↓          ↓
-           │  ┌──────────┐  ┌────────────────┐
-           └──│ Revision │  │ Return to User │
-              │  Agent   │  │  (Approve?)    │
-              └──────────┘  └──┬──────────┬──┘
-                            Yes│          │No + Feedback
-                               ↓          ↓
-                          ┌────────┐  ┌──────────┐
-                          │  Done  │  │ /revise  │──► Revision ──► Critic
-                          └────────┘  └──────────┘
+The final report is presented through an interactive **Streamlit** frontend backed by a **FastAPI** REST API, with full support for **Human-in-the-Loop (HITL)** approval and PDF export.
+
+---
+
+## Features
+
+| Feature | Description |
+|---|---|
+| 🗂️ **Query Decomposition** | Planner agent breaks complex queries into focused research subtopics |
+| 🌐 **Real-Time Web Retrieval** | Tavily Search API fetches live, relevant sources per subtopic |
+| 📝 **Citation-Aware Reports** | Inline `[1]`, `[2]` citations linked to a structured Sources section |
+| 🔄 **Reflection & Auto-Revision** | Critic scores reports 1–10; scores below 7 trigger automatic revision (max 2 cycles) |
+| 🤝 **Human-in-the-Loop** | Users approve or reject reports with custom feedback for further revision |
+| 🧠 **Context Summarization** | Maintains research continuity across consecutive queries |
+| 📊 **Critic Dashboard** | Score, strengths, weaknesses, citation quality, and revision suggestions |
+| 📄 **PDF Export** | Unicode-safe PDF generation via ReportLab |
+| 💾 **Persistent Memory** | Research history saved locally across sessions |
+| 🐳 **Docker Ready** | Single-command deployment with Docker Compose |
+
+---
+
+## Architecture
+
+The system is orchestrated as a **LangGraph state machine** with conditional routing and a reflection loop:
+
+```
+User Query
+    │
+    ▼
+┌─────────────────┐
+│ Summarizer Agent│  ← Maintains research context across sessions
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Planner Agent  │  ← Decomposes query into research subtopics
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Research Agent  │  ← Real-time web retrieval + citation indexing
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Writer Agent   │  ← Synthesizes structured report with inline citations
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Critic Agent   │  ← Scores report (1–10), identifies gaps
+└────┬────────────┘
+     │
+     ├── score < 7 AND revisions < 2  ──► Revision Agent ──► Critic (loop)
+     │
+     └── score ≥ 7 OR max revisions reached
+              │
+              ▼
+        Return to User
+         (Approve / Reject with Feedback)
+                  │
+                  └── Rejected ──► /revise API ──► Revision ──► Critic
 ```
 
 ---
 
-## ⚡ LangGraph Workflow
-
-The system uses LangGraph to orchestrate agent execution through a shared state-based workflow with **conditional routing**.
-
-Each agent operates as an independent node:
-
-- **Summarizer Node** — summarizes previous conversation/search history to maintain research context
-- **Planner Node** — decomposes the query into focused research subtopics
-- **Research Node** — retrieves real-time web content per subtopic
-- **Writer Node** — synthesizes findings into a structured markdown report
-- **Critic Node** — evaluates the report and returns structured JSON feedback
-- **Revision Node** — improves the report based on critic feedback (triggered conditionally)
-
-### Conditional Routing & Reflection Loop
-
-After the Critic evaluates the report:
-- If `score < 7` and `revision_count < 2` → the workflow automatically routes to the **Revision Node**, which improves the report and sends it back to the Critic for re-evaluation
-- If `score >= 7` or max revisions reached → the report is finalized and returned to the user
-
-### Human-in-the-Loop (HITL)
-
-After the automatic loop completes, the user can:
-- **✅ Approve** the report — finalizes it
-- **❌ Reject** with custom feedback (e.g., "Add more details about security risks") — triggers a revision via the `/revise` API endpoint, then re-evaluates with the Critic
-
----
-
-## 🤖 Agents
+## Agent Pipeline
 
 ### 1. Summarizer Agent
-- Uses `gpt-oss-120b` via Groq to analyze previous conversation history and the user's new query
-- Generates a concise summary of the core research context to maintain query continuity
-- Prevents redundant research across consecutive queries
+Analyzes conversation history and generates a concise context summary before each research session. Prevents redundant research across consecutive queries.
 
 ### 2. Planner Agent
-- Uses `gpt-oss-120b` via Groq for intelligent task planning
-- Breaks complex user queries into focused research topics
-- Generates structured outputs for downstream agents using Pydantic schemas
+Decomposes the user's query into focused, non-overlapping subtopics using structured Pydantic output. Acts as the research blueprint for downstream agents.
 
 ### 3. Research Agent
-- Performs real-time web retrieval using Tavily Search API
-- Collects relevant articles, URLs, and research snippets
-- Builds a **global source index** assigning each source a unique citation number `[1]`, `[2]`, etc.
-- Annotates each content chunk with its citation number for downstream traceability
-- Organizes retrieved information by topic for downstream synthesis
+Performs real-time web retrieval via Tavily Search API per subtopic. Builds a **global source index** — each source receives a unique citation number `[1]`, `[2]`, etc. — and annotates content chunks for downstream traceability.
 
 ### 4. Writer Agent
-- Synthesizes retrieved information into structured markdown reports
-- Embeds **inline citations** (`[1]`, `[2]`, etc.) throughout the report to attribute claims to their sources
-- Appends a **Sources section** at the end listing all cited sources with titles and URLs
-- Highlights emerging technologies, trends, and key insights
-- Produces concise, readable, and professional AI-generated research summaries
+Synthesizes all retrieved content into a structured markdown report. Embeds **inline citations** throughout and appends a formatted **Sources** section with titles and URLs.
 
 ### 5. Critic Agent
-- Evaluates generated reports for clarity, completeness, technical depth, and **citation quality**
-- Assesses whether inline citations are present and whether a Sources section is included
-- Returns a numeric score, strengths, weaknesses, missing topics, citation quality, **revision suggestions**, and a final verdict
-- A score below 7 triggers automatic revision (up to 2 times)
-- Outputs structured JSON using Pydantic schemas
+Evaluates the report across four dimensions:
+- **Clarity & Completeness** — overall depth and coverage
+- **Technical Depth** — accuracy and specificity
+- **Citation Quality** — inline citations and sources section presence
+- **Revision Suggestions** — concrete, actionable improvements
+
+Returns a structured JSON evaluation with a numeric score. Scores below **7/10** trigger automatic revision.
 
 ### 6. Revision Agent
-- Activated when the Critic scores a report below 7, or when the user requests a revision via HITL
-- Takes the original report + critic feedback (or user feedback) + research data
-- Produces an improved version while preserving structure and citations
-- Sends the revised report back to the Critic for re-evaluation
+Activated by the Critic (automatic) or the user (HITL). Receives the original report, critic/user feedback, and the full research dataset, then produces an improved version while preserving structure and citations.
 
 ---
 
-## 🖥️ Streamlit Frontend
+## Tech Stack
 
-The interactive frontend (`frontend/app.py`) connects to the FastAPI backend and provides:
-
-- Research topic input area
-- Live report rendering in markdown with clickable citation links
-- **PDF export** — downloadable, Unicode-safe report via ReportLab
-- Critic score metric display
-- Strengths / Weaknesses side-by-side columns
-- **Citation Quality** dashboard — inline citations and sources section status
-- **Revision Suggestions** from the Critic
-- Missing topics and final verdict sections
-- **Human-in-the-Loop UI** — Approve / Reject buttons with feedback text input
-- Revision counter badge showing how many revisions occurred
+| Layer | Technology | Version |
+|---|---|---|
+| Language | Python | 3.10+ |
+| Agent Orchestration | LangGraph + LangChain | 1.2 / 1.3 |
+| LLM Provider | Groq API | — |
+| Web Retrieval | Tavily Search API | 0.7 |
+| Backend | FastAPI + Uvicorn | 0.136 / 0.47 |
+| Frontend | Streamlit | 1.57 |
+| PDF Generation | ReportLab | 4.5 |
+| Data Validation | Pydantic | — |
+| Containerization | Docker + Docker Compose | — |
 
 ---
 
-## 🌐 FastAPI Backend
+## API Reference
 
-### Available Endpoints
+### `POST /research`
+Runs the full multi-agent research pipeline.
 
-#### Root
-```http
-GET /
-```
-
-#### Research
-```http
-POST /research
-```
-
-#### Revise (Human-in-the-Loop)
-```http
-POST /revise
-```
-
-#### Memory (History)
-```http
-GET /memory
-```
-
-#### Example Research Request
-
+**Request**
 ```json
-{
-  "query": "Future of AI agents in software engineering"
-}
+{ "query": "Future of AI agents in software engineering" }
 ```
 
-#### Example Research Response
-
+**Response**
 ```json
 {
   "query": "Future of AI agents in software engineering",
-  "report": "# AI Enhanced Software Development...\n\n## Sources\n[1] Source Title — https://example.com\n...",
+  "report": "# AI-Enhanced Software Development\n\n...",
   "critique": {
     "score": 8,
-    "strengths": ["Comprehensive coverage", "Well structured"],
-    "weaknesses": ["Lacks case studies"],
+    "strengths": ["Comprehensive coverage", "Well-structured sections"],
+    "weaknesses": ["Lacks real-world case studies"],
     "missing_topics": ["Cost analysis", "Vendor lock-in risks"],
     "citation_quality": {
       "has_inline_citations": true,
       "has_sources_section": true,
       "notes": "All major claims are properly cited."
     },
-    "revision_suggestions": ["Add real-world case studies", "Include cost analysis section"],
+    "revision_suggestions": ["Add case studies", "Include cost analysis"],
     "final_verdict": "Strong report with minor gaps."
   },
   "source_index": {
-    "1": { "title": "AI Agents Overview", "url": "https://example.com/ai-agents" },
-    "2": { "title": "Future of Software Engineering", "url": "https://example.com/future-se" }
-  },
-  "research_data": ["..."],
-  "revision_count": 0
-}
-```
-
-#### Example Revision Request
-
-```json
-{
-  "query": "Future of AI agents in software engineering",
-  "report": "# AI Enhanced Software Development...",
-  "user_feedback": "Add more details about security risks",
-  "research_data": ["..."],
-  "source_index": { "1": { "title": "...", "url": "..." } },
-  "revision_count": 0
-}
-```
-
-#### Example Revision Response
-
-```json
-{
-  "report": "# AI Enhanced Software Development (Revised)...",
-  "critique": {
-    "score": 9,
-    "strengths": ["Comprehensive coverage", "Security risks addressed"],
-    "weaknesses": [],
-    "revision_suggestions": [],
-    "final_verdict": "Excellent report after revision."
+    "1": { "title": "AI Agents Overview", "url": "https://example.com/ai-agents" }
   },
   "revision_count": 1
 }
 ```
 
-Interactive API docs available at:
+### `POST /revise`
+Triggers a Human-in-the-Loop revision with custom user feedback.
 
-```
-http://localhost:8080/docs
-```
+### `GET /memory`
+Returns the full research history from persistent local storage.
+
+Interactive API documentation: **`/docs`** (Swagger UI)
 
 ---
 
-## 🐳 Docker Setup (Recommended)
+## Quickstart
 
-### 1. Clone the Repository
+### Option 1 — Docker (Recommended)
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/ebrahimzaher/deepresearch-ai.git
 cd deepresearch-ai
-```
 
-### 2. Configure Environment Variables
+# 2. Configure environment variables
+cp .env.example .env
+# Edit .env and add your API keys:
+# GROQ_API_KEY=your_groq_api_key
+# TAVILY_API_KEY=your_tavily_api_key
 
-Create a `.env` file in the project root:
-
-```env
-GROQ_API_KEY=your_groq_api_key
-TAVILY_API_KEY=your_tavily_api_key
-```
-
-*Note: The frontend uses the `BACKEND_URL` environment variable to connect to the backend API. In the Docker setup, this is automatically configured to `http://backend:8000` via `docker-compose.yml`.*
-
-### 3. Build and Run
-
-```bash
+# 3. Build and run
 docker-compose up --build
 ```
 
-### 4. Access the App
-
-| Service  | URL                          |
-|----------|------------------------------|
-| Frontend | http://localhost:8501        |
-| Backend  | http://localhost:8080        |
-| API Docs | http://localhost:8080/docs   |
-
-Generated reports are saved to the `reports/` folder in the project root.
-
-### `.dockerignore`
-
-```
-venv
-__pycache__
-.env
-.git
-reports
-```
+| Service | URL |
+|---|---|
+| Frontend (Streamlit) | http://localhost:8501 |
+| Backend (FastAPI) | http://localhost:8080 |
+| API Documentation | http://localhost:8080/docs |
 
 ---
 
-## ⚙️ Local Setup (Without Docker)
-
-### 1. Clone the Repository
+### Option 2 — Local Setup
 
 ```bash
+# 1. Clone and create virtual environment
 git clone https://github.com/ebrahimzaher/deepresearch-ai.git
 cd deepresearch-ai
-```
-
-### 2. Create a Virtual Environment
-
-**Linux / macOS**
-```bash
 python -m venv venv
+
+# Activate (Linux/macOS)
 source venv/bin/activate
-```
-
-**Windows**
-```bash
-python -m venv venv
+# Activate (Windows)
 venv\Scripts\activate
-```
 
-### 3. Install Dependencies
-
-```bash
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-### 4. Configure Environment Variables
+# 3. Configure environment variables
+# Create a .env file with:
+# GROQ_API_KEY=your_groq_api_key
+# TAVILY_API_KEY=your_tavily_api_key
 
-Create a `.env` file in the project root:
+# 4. Start the backend
+uvicorn api.main:app --reload --port 8000
 
-```env
-GROQ_API_KEY=your_groq_api_key
-TAVILY_API_KEY=your_tavily_api_key
-```
-
-### 5. Run the FastAPI Backend
-
-```bash
-uvicorn api.main:app --reload
-```
-
-### 6. Run the Streamlit Frontend
-
-```bash
+# 5. Start the frontend (in a new terminal)
 streamlit run frontend/app.py
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Environment Variables
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.10+ |
-| Agent Orchestration | LangGraph, LangChain |
-| LLM Provider | Groq API (`gpt-oss-120b`) |
-| Web Retrieval | Tavily Search API |
-| Backend | FastAPI + Uvicorn |
-| Frontend | Streamlit |
-| PDF Generation | ReportLab |
-| Data Validation | Pydantic |
-| Containerization | Docker + Docker Compose |
+| Variable | Required | Description |
+|---|---|---|
+| `GROQ_API_KEY` | ✅ | API key from [console.groq.com](https://console.groq.com) |
+| `TAVILY_API_KEY` | ✅ | API key from [app.tavily.com](https://app.tavily.com) |
+| `BACKEND_URL` | ⚙️ | Backend URL for the frontend (default: `http://localhost:8000`) |
 
 ---
 
-## 📌 Example Workflow
+## Project Structure
 
-**Input query:**
 ```
-Future of AI agents in software engineering
+deepresearch-ai/
+├── api/
+│   └── main.py              # FastAPI application & endpoints
+├── frontend/
+│   └── app.py               # Streamlit UI
+├── src/
+│   ├── agents/              # Individual agent implementations
+│   │   ├── planner.py
+│   │   ├── researcher.py
+│   │   ├── writer.py
+│   │   ├── critic.py
+│   │   ├── revision.py
+│   │   └── summarizer.py
+│   ├── graph/               # LangGraph workflow
+│   │   ├── workflow.py      # Graph definition & compilation
+│   │   ├── nodes.py         # Node functions
+│   │   └── state.py         # Shared state schema
+│   ├── prompts/             # Agent prompt templates
+│   └── services/            # Shared utilities (memory, search)
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── start.sh                 # Container startup script
 ```
-
-**Planner output (subtopics):**
-- AI-driven code generation & synthesis
-- Automated debugging and testing
-- AI-assisted software architecture
-- Human-AI collaboration models
-- Ethical, security & bias considerations
-
-**Final output:**
-
-A fully structured markdown research report containing an introduction, per-topic research sections with inline citations `[1]`, `[2]`, key technology insights, a conclusion, and a **Sources** section listing all referenced URLs — plus a structured critic evaluation with score, strengths, weaknesses, citation quality assessment, revision suggestions, and verdict. If the critic scores the report below 7, it is automatically revised (up to 2 times). The user can then **approve** or **reject with feedback** for further human-guided revision. Exportable as a PDF.
 
 ---
 
-## 🔜 Roadmap
+## Roadmap
 
 - [ ] Multi-turn conversational research sessions
+- [ ] Vector store integration for long-term memory
 - [ ] Cloud deployment (Render / Railway)
+- [ ] Support for additional LLM providers (OpenAI, Anthropic)
+- [ ] Export to Word / Notion
 
 ---
 
-## 👨‍💻 Developed By
+## Contributing
 
-[Ebrahim Zaher](https://github.com/ebrahimzaher)
+Contributions are welcome! Please open an issue first to discuss what you'd like to change.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+**Built by [Ebrahim Zaher](https://github.com/ebrahimzaher)**
+
+⭐ Star this repo if you find it useful!
+
+</div>
