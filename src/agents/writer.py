@@ -35,9 +35,13 @@ def _format_source_index(source_index: dict) -> str:
 
 
 def writer_agent(query, research_data, source_index: dict = None):
+    raw = str(research_data)
+    if len(raw) > 5000:
+        raw = raw[:5000] + "\n... [truncated]"
+
     response = writer_chain.invoke({
         "query": query,
-        "research_data": str(research_data),
+        "research_data": raw,
         "source_index": _format_source_index(source_index)
     })
     
