@@ -37,13 +37,22 @@ def _format_source_index(source_index: dict) -> str:
     return "No sources available."
 
 
+def _truncate_research_data(research_data, max_chars: int = 3000) -> str:
+    """Truncate research data to avoid exceeding model token limits."""
+    raw = str(research_data)
+    if len(raw) > max_chars:
+        return raw[:max_chars] + "\n... [truncated for length]"
+    return raw
+
+
 def revision_agent(query: str, original_report: str, critique_feedback: str, research_data, source_index: dict = None):
     response = revision_chain.invoke({
         "query": query,
         "original_report": original_report,
-        "research_data": str(research_data),
+        "research_data": _truncate_research_data(research_data),
         "source_index": _format_source_index(source_index),
         "critique_feedback": critique_feedback
     })
     
     return response.content
+
